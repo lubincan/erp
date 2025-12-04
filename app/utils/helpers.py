@@ -3,7 +3,7 @@
 """
 from datetime import datetime, date
 from functools import wraps
-from flask import request, jsonify
+from flask import request, jsonify, session
 from app.models import User
 
 
@@ -29,19 +29,18 @@ def login_required(f):
     """登录验证装饰器（简化版，实际应该使用JWT）"""
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # 简化版：从请求参数获取user_id
-        # 实际应用中应该从JWT Token中获取
-        user_id = request.args.get('user_id') or request.json.get('user_id') if request.json else None
-        if not user_id:
+        # 从session中获取user_id
+        if 'user_id' not in session:
             return error_response('请先登录', 401)
-        
+
+        user_id = session['user_id']
         user = User.query.get(user_id)
         if not user:
             return error_response('用户不存在', 404)
-        
+
         if user.status != 'active':
             return error_response('用户已被禁用', 403)
-        
+
         # 将用户对象添加到请求上下文
         request.current_user = user
         return f(*args, **kwargs)

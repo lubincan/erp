@@ -30,14 +30,24 @@ def create_app(config_name='development'):
         app.config['DEBUG'] = True
     else:
         # 生产环境配置
-        app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
+        app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
         app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
         app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
         app.config['DEBUG'] = False
+
+    # 设置SECRET_KEY（开发环境）
+    if not app.config.get('SECRET_KEY'):
+        app.config['SECRET_KEY'] = 'dev-secret-key-change-in-production'
     
     # 初始化扩展
     db.init_app(app)
-    cors.init_app(app)
+    cors.init_app(app, resources={
+        r"/api/*": {
+            "origins": "*",
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization"]
+        }
+    })
     
     # 配置Swagger文档
     swagger_config = {
