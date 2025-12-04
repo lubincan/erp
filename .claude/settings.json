@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "node -v"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
